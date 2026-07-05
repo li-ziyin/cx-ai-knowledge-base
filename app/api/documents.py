@@ -1,18 +1,21 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from sqlalchemy.orm import Session
+from app.core.database import get_db
 from app.services.document_service import document_service
 from app.services.rag_service import rag_service
+from app.models.database_models import DocumentLog
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 
 @router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="文件名不能为空")
 
     content = await file.read()
 
-    # 解析
+    # 解析文档
     try:
         if file.filename.endswith('.pdf'):
             text = document_service.parse_pdf(content)
@@ -27,6 +30,11 @@ async def upload_document(file: UploadFile = File(...)):
 
     # 入库
     chunk_count = rag_service.add_document(text)
+
+    # 记录日志
+    log = DocumentLog(filename=file.filename, chunks_added=chunk_count)
+    db.add(log)
+    db.commit()
 
     return {
         "filename": file.filename,

@@ -1,44 +1,72 @@
 <template>
   <div class="chat-container">
-    <h2>🤖 AI 知识库问答</h2>
+    <el-card class="chat-card">
+      <template #header>
+        <div class="card-header">
+          <el-icon :size="24" class="header-icon"><chat-line-round /></el-icon>
+          <span>AI 知识库问答</span>
+        </div>
+      </template>
 
-    <div class="input-box">
-      <textarea
-        v-model="question"
-        placeholder="输入你的问题，例如：长鑫存储是做什么的？"
-        rows="3"
-      ></textarea>
-      <button @click="ask" :disabled="loading">
-        {{ loading ? '思考中...' : '发送' }}
-      </button>
-    </div>
+      <div class="input-area">
+        <el-input
+          v-model="question"
+          type="textarea"
+          :rows="3"
+          placeholder="输入你的问题，例如：晋景公是怎么死的？"
+          @keyup.enter.ctrl="ask"
+        />
+        <el-button
+          type="primary"
+          @click="ask"
+          :loading="loading"
+          class="send-btn"
+        >
+          {{ loading ? '思考中...' : '发送' }}
+        </el-button>
+      </div>
 
-    <div v-if="answer" class="answer-box">
-      <h3>回答：</h3>
-      <div class="content">{{ answer }}</div>
+      <div v-if="answer" class="answer-area">
+        <el-divider content-position="left">回答</el-divider>
+        <div class="answer-content" v-html="formattedAnswer"></div>
 
-      <div v-if="sources.length" class="sources">
-        <h4>📚 参考来源：</h4>
-        <div v-for="(src, i) in sources" :key="i" class="source-item">
-          <span class="tag">片段{{ i+1 }}</span>
-          <p>{{ src }}</p>
+        <div v-if="sources.length" class="sources-area">
+          <el-divider content-position="left">参考来源（{{ sources.length }}条）</el-divider>
+          <el-collapse>
+            <el-collapse-item
+              v-for="(src, i) in sources"
+              :key="i"
+              :title="`片段 ${i+1}`"
+            >
+              <div class="source-text">{{ src }}</div>
+            </el-collapse-item>
+          </el-collapse>
         </div>
       </div>
-    </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import axios from 'axios'
+import { ChatLineRound } from '@element-plus/icons-vue'
 
 const question = ref('')
 const answer = ref('')
 const sources = ref([])
 const loading = ref(false)
 
+const formattedAnswer = computed(() => {
+  return answer.value.replace(/\n/g, '<br>')
+})
+
 const ask = async () => {
-  if (!question.value.trim()) return
+  if (!question.value.trim()) {
+    ElMessage.warning('请输入问题')
+    return
+  }
+
   loading.value = true
   answer.value = ''
   sources.value = []
@@ -50,8 +78,12 @@ const ask = async () => {
     })
     answer.value = res.data.reply
     sources.value = res.data.sources || []
+
+    if (sources.value.length === 0) {
+      ElMessage.info('未检索到相关文档，回答基于模型自身知识')
+    }
   } catch (err) {
-    answer.value = '请求失败：' + (err.response?.data?.detail || err.message)
+    ElMessage.error('请求失败：' + (err.response?.data?.detail || err.message))
   } finally {
     loading.value = false
   }
@@ -60,54 +92,46 @@ const ask = async () => {
 
 <style scoped>
 .chat-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 20px;
 }
-.input-box textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  resize: vertical;
-  font-size: 14px;
+.chat-card {
+  min-height: 500px;
 }
-button {
+.card-header {
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+.header-icon {
+  margin-right: 10px;
+  color: #409eff;
+}
+.input-area {
+  margin-bottom: 20px;
+}
+.send-btn {
   margin-top: 10px;
-  padding: 10px 24px;
-  background: #409eff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
+  width: 100%;
 }
-button:disabled {
-  background: #a0cfff;
-}
-.answer-box {
-  margin-top: 20px;
-  padding: 16px;
+.answer-content {
+  line-height: 1.8;
+  color: #303133;
+  font-size: 15px;
+  padding: 10px;
   background: #f5f7fa;
   border-radius: 8px;
 }
-.content {
+.sources-area {
+  margin-top: 20px;
+}
+.source-text {
+  color: #606266;
   line-height: 1.6;
-  color: #333;
-}
-.sources {
-  margin-top: 16px;
-}
-.source-item {
-  margin: 8px 0;
   padding: 10px;
-  background: white;
-  border-left: 4px solid #409eff;
+  background: #fafafa;
   border-radius: 4px;
-}
-.tag {
-  font-size: 12px;
-  color: #409eff;
-  font-weight: bold;
 }
 </style>
