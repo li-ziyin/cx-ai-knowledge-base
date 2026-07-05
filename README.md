@@ -1,17 +1,33 @@
 # CX AI Knowledge Base
 
-基于 DeepSeek 大模型的企业级 AI 知识库问答系统。
+基于 DeepSeek 大模型 + RAG 技术的企业级 AI 知识库问答系统。
 
 ## 技术栈
-- **后端**: FastAPI + Python + DeepSeek API
-- **数据库**: PostgreSQL + Elasticsearch（待接入）
-- **前端**: React/Vue（待开发）
+
+- 后端：FastAPI + DeepSeek API + sentence-transformers
+- 前端：Vue 3 + Element Plus
 
 ## 快速启动
 
-```bash
-# 安装依赖
-pip install -r requirements.txt
+### 后端
 
-# 启动服务
-python run.py
+    pip install -r requirements.txt
+    python run.py
+
+### 前端
+
+    cd frontend
+    npm install
+    npm run dev
+
+访问 http://localhost:5173 使用系统。
+
+## 功能
+
+- 文档上传（PDF/DOCX/TXT）
+- 语义检索问答
+- 参考来源溯源
+
+## 作者
+
+li-ziyin
