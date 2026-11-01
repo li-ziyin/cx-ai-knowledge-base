@@ -2,7 +2,7 @@
 
 基于 DeepSeek + RAG 的知识库问答系统：文档上传 → 分块 → 向量化 → 语义检索 → 带来源溯源的回答。
 
-> 这是我的第一个完整 RAG 实现（Python 技术栈）。其工程化升级——Redis Stack 向量检索（HNSW）、结构感知分块、评测驱动调优（Recall@5 / MRR@5 指标）——见姊妹项目 **AgentFlow**（Spring Boot 4，见我的 GitHub 仓库列表）。
+> 这是我的第一个完整 RAG 实现（Python 技术栈）。其工程化升级——Redis Stack 向量检索（HNSW）、结构感知分块、评测驱动调优（Recall@5 / MRR@5 指标）——见姊妹项目 **[AgentFlow](https://github.com/li-ziyin/AgentFlow)**（Spring Boot 4 实现）。
 
 ## 功能
 
